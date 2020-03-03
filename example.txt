@@ -1,0 +1,12 @@
+sources:
+
+	x:
+		path:
+
+	y:
+
+target:
+	fileName:
+	savePath:
+	logic:
+		f1:$x.
