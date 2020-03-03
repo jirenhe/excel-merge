@@ -9,18 +9,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TargetExcelEntity extends ExcelEntity {
+public class TargetExcel extends AbstractExcel {
 
     private final List<String> titles;
 
     private final Map<String, Record> datas = new HashMap<>();
 
-    public TargetExcelEntity(String dir, String fullName, String primaryKey, List<String> titles) {
+    public TargetExcel(String dir, String fullName, String primaryKey, List<String> titles) {
         super(dir, fullName, primaryKey);
         this.titles = titles;
     }
 
-    public TargetExcelEntity(String fullPath, String primaryKey, List<String> titles) {
+    public TargetExcel(String fullPath, String primaryKey, List<String> titles) {
         super(fullPath, primaryKey);
         this.titles = titles;
     }

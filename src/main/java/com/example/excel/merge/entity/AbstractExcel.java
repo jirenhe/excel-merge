@@ -4,7 +4,7 @@ import com.example.excel.merge.DefineException;
 
 import java.io.File;
 
-public abstract class ExcelEntity {
+public abstract class AbstractExcel {
 
     protected final String fileName;
 
@@ -14,11 +14,11 @@ public abstract class ExcelEntity {
 
     protected final String primaryKey;
 
-    public ExcelEntity(String dir, String fullName, String primaryKey) {
+    public AbstractExcel(String dir, String fullName, String primaryKey) {
         this(dir + File.pathSeparator + fullName, primaryKey);
     }
 
-    public ExcelEntity(String fullPath, String primaryKey) {
+    public AbstractExcel(String fullPath, String primaryKey) {
         this.primaryKey = primaryKey;
         while (fullPath.contains(File.pathSeparator + File.pathSeparator)) {
             fullPath = fullPath.replaceAll(File.pathSeparator + File.pathSeparator, File.pathSeparator);

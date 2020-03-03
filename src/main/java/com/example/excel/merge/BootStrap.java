@@ -1,11 +1,12 @@
 package com.example.excel.merge;
 
-import com.example.excel.merge.entity.MergeConfig;
+import com.example.excel.merge.entity.config.MergeConfig;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 public class BootStrap {
 
@@ -20,7 +21,11 @@ public class BootStrap {
         Yaml yaml = new Yaml();
         try {
             MergeConfig mergeConfig = yaml.loadAs(new FileInputStream(yamlFile), MergeConfig.class);
+            for (Map.Entry<String, MergeConfig.Source> stringSourceEntry : mergeConfig.getSources().entrySet()) {
+                stringSourceEntry.getValue().setAlias(stringSourceEntry.getKey());
+            }
             System.out.println(mergeConfig);
+            MergeEngine.merge(mergeConfig);
         } catch (FileNotFoundException e) {
             System.err.print("配置文件无法读取！");
         } catch (Exception e) {

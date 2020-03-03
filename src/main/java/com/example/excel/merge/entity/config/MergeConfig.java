@@ -1,4 +1,4 @@
-package com.example.excel.merge.entity;
+package com.example.excel.merge.entity.config;
 
 import java.util.List;
 import java.util.Map;

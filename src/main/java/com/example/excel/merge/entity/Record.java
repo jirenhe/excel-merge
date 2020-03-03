@@ -25,7 +25,7 @@ public class Record {
         this.values.put(primaryKey, primaryKeyValue);
     }
 
-    public String appendValue(String key, String value) {
+    public String appendColumn(String key, String value) {
         return values.put(key, value);
     }
 
