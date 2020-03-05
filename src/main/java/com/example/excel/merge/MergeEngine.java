@@ -4,6 +4,7 @@ import com.example.excel.merge.entity.Record;
 import com.example.excel.merge.entity.SourceExcel;
 import com.example.excel.merge.entity.TargetExcel;
 import com.example.excel.merge.entity.config.MergeConfig;
+import com.example.excel.merge.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +69,29 @@ public class MergeEngine {
     }
 
     private static void checkMergeConfig(MergeConfig mergeConfig) {
-
+        if (StringUtils.isEmpty(mergeConfig.getMergeKey())) {
+            throw new DefineException("缺少mergeKey，请指定mergeKey");
+        }
+        if (mergeConfig.getSources() == null || mergeConfig.getSources().size() == 0) {
+            throw new DefineException("缺少sources，请至少指定一个source");
+        }
+        for (MergeConfig.Source source : mergeConfig.getSources().values()) {
+            if (source.getPath() == null || "".equals(source.getPath())) {
+                throw new DefineException("source:" + source.getAlias() + "，缺少文件路径");
+            }
+        }
+        MergeConfig.Target target = mergeConfig.getTarget();
+        if (target == null) {
+            throw new DefineException("缺少target，请指定一个target");
+        }
+        if (StringUtils.isEmpty(target.getName())) {
+            throw new DefineException("target缺少文件名name，请指定目标文件名");
+        }
+        if (StringUtils.isEmpty(target.getPath())) {
+            throw new DefineException("target缺少文件路径path，请指定目标文件保存路径");
+        }
+        if (target.getLogic() == null || target.getLogic().size() == 0) {
+            throw new DefineException("target缺少聚合逻辑logic，请指定具体聚合逻辑");
+        }
     }
 }
