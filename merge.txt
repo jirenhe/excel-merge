@@ -1,0 +1,14 @@
+mergeKey: 姓名
+sources:
+ x:
+  path: C:\Users\jirenhe\Desktop\1.xlsx
+ y:
+  path: C:\Users\jirenhe\Desktop\2.xlsx
+target:
+ name: 3.xlsx
+ path: C:\Users\jirenhe\Desktop\
+ logic:
+  年龄: x.年龄
+  身份证号码: x.身份证
+  phone: y.手机号
+  address: y.地址

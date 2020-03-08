@@ -7,10 +7,10 @@ import com.example.excel.merge.entity.config.MergeConfig;
 import com.example.excel.merge.utils.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public class MergeEngine {
 
@@ -22,40 +22,66 @@ public class MergeEngine {
         String primaryKey = mergeConfig.getMergeKey();
         Map<String, SourceExcel> sourceExcelMap = initSourceExcel(mergeConfig.getSources(), primaryKey);
         TargetExcel targetExcel = initTargetExcel(mergeConfig.getTarget(), primaryKey);
-        SourceExcel maxLengthExcel = chooseMaxLengthExcel(sourceExcelMap.values());
-        Map<String, Function<Map<String, SourceExcel>, String>> logic = compileLogic(mergeConfig.getTarget().getLogic());
-        int logicSize = mergeConfig.getTarget().getLogic().size();
-        for (Map.Entry<String, Record> recordEntry : maxLengthExcel.getDatas().entrySet()) {
-            String primaryKeyValue = recordEntry.getValue().getPrimaryKeyValue();
+        LinkedHashSet<String> primaryKeyValues = mergePrimaryKey(sourceExcelMap);
+
+        System.out.println("一共合并" + primaryKeyValues.size() + "条记录，主键集合如下:");
+        for (String primaryKeyValue : primaryKeyValues) {
+            System.out.println(primaryKeyValue);
+        }
+
+        Map<String, BiFunction<Map<String, SourceExcel>, String, String>> logic = compileLogic(mergeConfig.getTarget().getLogic());
+
+        final int logicSize = mergeConfig.getTarget().getLogic().size();
+        for (String primaryKeyValue : primaryKeyValues) {
             Record record = new Record(primaryKey, primaryKeyValue, logicSize);
-            for (Map.Entry<String, Function<Map<String, SourceExcel>, String>> logicEntry : logic.entrySet()) {
-                Function<Map<String, SourceExcel>, String> function = logicEntry.getValue();
-                record.appendColumn(logicEntry.getKey(), function.apply(sourceExcelMap));
+            for (Map.Entry<String, BiFunction<Map<String, SourceExcel>, String, String>> logicEntry : logic.entrySet()) {
+                BiFunction<Map<String, SourceExcel>, String, String> function = logicEntry.getValue();
+                record.appendColumn(logicEntry.getKey(), function.apply(sourceExcelMap, primaryKeyValue));
             }
             targetExcel.appendRecord(record);
         }
-        targetExcel.save();
+        String s = targetExcel.save();
+        System.out.println("合并成功，已经合并到文件" + s + "中");
     }
 
-    private static Map<String, Function<Map<String, SourceExcel>, String>> compileLogic(Map<String, String> logic) {
-        return null;
-    }
-
-    private static SourceExcel chooseMaxLengthExcel(Collection<SourceExcel> values) {
-        int maxLen = 0;
-        SourceExcel maxLenExcel = null;
-        for (SourceExcel value : values) {
-            int len = value.getDatas().size();
-            if (len > maxLen) {
-                maxLen = len;
-                maxLenExcel = value;
+    private static LinkedHashSet<String> mergePrimaryKey(Map<String, SourceExcel> sourceExcelMap) {
+        LinkedHashSet<String> result = new LinkedHashSet<>();
+        for (SourceExcel value : sourceExcelMap.values()) {
+            for (Record record : value.getDatas().values()) {
+                result.add(record.getPrimaryKeyValue());
             }
         }
-        return maxLenExcel;
+        return result;
+    }
+
+    private static Map<String, BiFunction<Map<String, SourceExcel>, String, String>> compileLogic(Map<String, String> logics) {
+        Map<String, BiFunction<Map<String, SourceExcel>, String, String>> result = new HashMap<>();
+        for (Map.Entry<String, String> en : logics.entrySet()) {
+            String logic = en.getValue();
+            String[] splited = logic.split("\\.");
+            if (splited.length != 2) {
+                throw new DefineException("定义的logic：" + logic + " 有误");
+            }
+            String from = splited[0];
+            String value = splited[1];
+            result.put(en.getKey(), (stringSourceExcelMap, primaryKeyValue) -> {
+                SourceExcel sourceExcel = stringSourceExcelMap.get(from);
+                if (sourceExcel == null) {
+                    throw new DefineException("logic变量" + en.getKey() + "未定义");
+                }
+                Record record = sourceExcel.getDatas().get(primaryKeyValue);
+                if (record != null) {
+                    return record.getValues().getOrDefault(value, "");
+                } else {
+                    return "";
+                }
+            });
+        }
+        return result;
     }
 
     private static TargetExcel initTargetExcel(MergeConfig.Target target, String primaryKey) {
-        return new TargetExcel(target.getPath(), target.getName(), new ArrayList<>(target.getLogic().keySet()));
+        return new TargetExcel(target.getPath(), target.getName(), primaryKey, new ArrayList<>(target.getLogic().keySet()));
     }
 
     private static Map<String, SourceExcel> initSourceExcel(Map<String, MergeConfig.Source> sources, String primaryKey) {

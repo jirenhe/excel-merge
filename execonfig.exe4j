@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exe4j version="7.0" transformSequenceNumber="3">
+  <directoryPresets config="E:/project/excel-merge/target" />
+  <application name="merge-excel" distributionSourceDir="E:/project/excel-merge/target" />
+  <executable name="merge-excel" wrapperType="embed" executableDir="." redirectStderr="false" executableMode="console" />
+  <java mainClass="com.example.excel.merge.BootStrap" minVersion="1.8" maxVersion="1.8">
+    <classPath>
+      <archive location="excel-merge-1.0-SNAPSHOT-jar-with-dependencies.jar" failOnError="false" />
+    </classPath>
+  </java>
+</exe4j>
